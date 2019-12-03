@@ -16,7 +16,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-func Use(useHeader bool, trees, labelN int, useParam []int, filename string) error {
+func Use(useHeader bool, trees, labelN int, useParam []int, filename string) (float64, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -70,6 +70,7 @@ func Use(useHeader bool, trees, labelN int, useParam []int, filename string) err
 	fmt.Printf("%+v\n", label[:2])
 
 	// 決定木を増やしつつ、正答率を見て最適なtrees numberを取得する
+	// count same treesLength
 	count := trees
 
 	var (
@@ -101,8 +102,9 @@ func Use(useHeader bool, trees, labelN int, useParam []int, filename string) err
 	// 出力層
 	// Error
 	var (
-		errorPrint string
+		errorPrint float64
 		min        = math.Inf(1)
+		tree       int
 		eMean      []float64
 	)
 
@@ -111,8 +113,9 @@ func Use(useHeader bool, trees, labelN int, useParam []int, filename string) err
 	go func() { // エラーが少ないtreesNを取得
 		for key, val := range hikakuE {
 			if val < min {
+				tree = key
 				min = val
-				errorPrint = fmt.Sprintf("tree: %d, min-error: %f", key, min)
+				errorPrint = min
 			}
 			eMean = append(eMean, val)
 		}
@@ -122,9 +125,13 @@ func Use(useHeader bool, trees, labelN int, useParam []int, filename string) err
 	wg.Wait()
 
 	mean, std := stat.MeanStdDev(eMean, nil)
-	fmt.Printf("施行回数: %d, %s ----- success: %f (mean: %f, stdv: %f) \n", checkCount, errorPrint, 1-min, mean, std)
+	fmt.Printf("施行回数: %d, betterTree: %d, errors-min: %f ----- success: %f (mean: %f, stdv: %f) \n",
+		checkCount,
+		tree,
+		errorPrint,
+		1-min, mean, std)
 
-	return nil
+	return 0, nil
 }
 
 func toF(s string) float64 {

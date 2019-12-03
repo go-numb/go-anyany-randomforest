@@ -13,14 +13,15 @@ func TestUse(t *testing.T) {
 		fmt.Println("exec time: ", end.Sub(start))
 	}()
 
-	filename := "data/iris/iris/Iris.csv"
+	filename := "/Volumes/DailySD/SD_Desktop/data/iris/iris/Iris.csv"
 
 	useHeader := false
 	trees := 100
 	labelColomn := 5
 	useColumn := []int{1, 2, 3, 4}
-	if err := Use(useHeader, trees, labelColomn, useColumn, filename); err != nil {
+	f, err := Use(useHeader, trees, labelColomn, useColumn, filename)
+	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("success")
+	t.Logf("success %f", f)
 }
